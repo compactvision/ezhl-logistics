@@ -37,7 +37,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
 
           {/* Logo */}
-          <a href="#" className="flex items-center gap-3 group shrink-0">
+          <a href="#" className="flex items-center gap-2 sm:gap-3 group shrink-0">
             <div className="relative w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center bg-white shadow-lg shadow-accent/20 shrink-0">
               <img
                 src="https://media.base44.com/images/public/69c04a45b779b17de99ef2bc/f71e8a031_F85F28EB-BA4B-4773-9C09-4550FE636D5E.JPG"
@@ -45,11 +45,11 @@ export default function Navbar() {
                 className="w-full h-full object-contain"
               />
             </div>
-            <div className="hidden sm:flex flex-col">
-              <p className="font-tight font-black text-base tracking-tight text-white leading-none">
+            <div className="flex flex-col">
+              <p className="font-tight font-black text-sm sm:text-base tracking-tight text-white leading-none">
                 Easy Handling & Logistics
               </p>
-              <p className="font-tight text-[9px] tracking-widest uppercase text-accent leading-none mt-1">
+              <p className="font-tight text-[8px] sm:text-[9px] tracking-widest uppercase text-accent leading-none mt-1">
                 EZHL · RDC
               </p>
             </div>

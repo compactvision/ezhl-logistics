@@ -10,6 +10,7 @@ import { router } from "@inertiajs/react";
 import { useLang } from "../hooks/useLang";
 
 const OFFICES = [
+  { city: "Kinshasa", address: "Blvd Triomphal n°52553 local 1, 2ème niveau concession Cathédrale du centenaire", country: "République Démocratique du Congo" },
   { city: "Kisangani — Siège social", address: "4/1, avenue Tchatchi, Commune de Makiso", country: "République Démocratique du Congo" },
   { city: "Lubumbashi", address: "604, avenue Lubilanshi, Commune de Lubumbashi", country: "République Démocratique du Congo" },
 ];
