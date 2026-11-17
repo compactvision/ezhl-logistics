@@ -101,11 +101,11 @@ export default function ContactSection() {
             <div className="p-6 rounded-xl bg-card border border-border">
               <h3 className="font-tight font-700 text-sm tracking-technical uppercase text-foreground mb-5">{t.contact.directContact}</h3>
               <div className="space-y-4">
-                <a href="mailto:easyhandling.drc@gmail.com" className="flex items-center gap-3 text-sm text-muted-foreground hover:text-accent transition-colors group">
+                <a href="mailto:contact@ezhl-logistics.com" className="flex items-center gap-3 text-sm text-muted-foreground hover:text-accent transition-colors group">
                   <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent/20 transition-colors">
                     <Mail className="w-4 h-4 text-accent" />
                   </div>
-                  <span className="font-inter">easyhandling.drc@gmail.com</span>
+                  <span className="font-inter">contact@ezhl-logistics.com</span>
                 </a>
                 <a href="tel:+243851800002" className="flex items-center gap-3 text-sm text-muted-foreground hover:text-accent transition-colors group">
                   <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent/20 transition-colors">
