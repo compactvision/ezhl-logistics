@@ -1,14 +1,16 @@
 <x-mail::message>
-# Nouvelle demande de contact — EZHL Logistics
+# Demande de contact [{{ $data['reference'] ?? 'EZHL' }}]
 
-Vous avez reçu une nouvelle demande via le formulaire du site web **EZHL Logistics**.
+Vous avez reçu une nouvelle demande via le portail web **EZHL Logistics**.
 
 <x-mail::panel>
-**Détails de l'expéditeur :**
+**Détails du dossier :**
+- **Référence :** `{{ $data['reference'] ?? 'N/A' }}`
 - **Nom complet :** {{ $data['name'] }}
 - **Email :** {{ $data['email'] }}
 - **Téléphone :** {{ !empty($data['phone']) ? $data['phone'] : 'Non renseigné' }}
-- **Type de flux / service :** {{ $data['type'] }}
+- **Type de prestation :** {{ $data['type'] }}
+- **Date de réception :** {{ now()->format('d/m/Y H:i') }}
 </x-mail::panel>
 
 **Message :**
@@ -16,7 +18,7 @@ Vous avez reçu une nouvelle demande via le formulaire du site web **EZHL Logist
 {!! nl2br(e($data['message'])) !!}
 </x-mail::panel>
 
-<x-mail::button :url="'mailto:' . $data['email']">
+<x-mail::button :url="'mailto:' . $data['email'] . '?subject=Re: [' . ($data['reference'] ?? 'EZHL') . '] Votre demande EZHL Logistics'">
 Répondre directement à {{ $data['name'] }}
 </x-mail::button>
 

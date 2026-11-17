@@ -19,14 +19,19 @@ class ContactRequest extends Mailable
      */
     public array $data;
 
+    public string $reference;
+
     /**
      * Create a new message instance.
      *
      * @param array<string, mixed> $data
+     * @param string $reference
      */
-    public function __construct(array $data)
+    public function __construct(array $data, string $reference = '')
     {
         $this->data = $data;
+        $this->reference = $reference ?: ('EZHL-' . strtoupper(substr(uniqid(), -6)));
+        $this->data['reference'] = $this->reference;
     }
 
     /**
@@ -38,7 +43,7 @@ class ContactRequest extends Mailable
         $senderEmail = (string) ($this->data['email'] ?? '');
 
         return new Envelope(
-            subject: 'Nouvelle demande de contact - ' . $senderName,
+            subject: "[{$this->reference}] Nouvelle demande de contact — {$senderName}",
             replyTo: !empty($senderEmail) ? [new Address($senderEmail, $senderName)] : [],
         );
     }
