@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Mail, Phone, MapPin, Send, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mail, Phone, MapPin, Send, Loader2, CheckCircle2, RotateCcw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,12 +15,29 @@ const OFFICES = [
   { city: "Lubumbashi", address: "604, avenue Lubilanshi, Commune de Lubumbashi", country: "République Démocratique du Congo" },
 ];
 
+interface FormState {
+  name: string;
+  email: string;
+  phone: string;
+  type: string;
+  message: string;
+}
+
+interface SubmittedSummary {
+  name: string;
+  email: string;
+  phone?: string;
+  typeLabel?: string;
+}
+
 export default function ContactSection() {
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", type: "", message: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const [submittedSummary, setSubmittedSummary] = useState<SubmittedSummary | null>(null);
+  const [form, setForm] = useState<FormState>({ name: "", email: "", phone: "", type: "", message: "" });
   const { t, isRTL } = useLang();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.type || !form.message) {
       toast.error(t.contact.errorRequired);
@@ -28,14 +45,26 @@ export default function ContactSection() {
     }
     setLoading(true);
 
-    router.post("/contact", form, {
+    const typeObj = t.contact.types.find((item: { value: string; label: string }) => item.value === form.type);
+    const typeLabel = typeObj ? typeObj.label : form.type;
+    const currentPayload = { ...form };
+
+    router.post("/contact", currentPayload, {
       onSuccess: () => {
         toast.success(t.contact.successMsg);
+        setSubmittedSummary({
+          name: currentPayload.name,
+          email: currentPayload.email,
+          phone: currentPayload.phone || undefined,
+          typeLabel: typeLabel,
+        });
+        setSubmitted(true);
         setForm({ name: "", email: "", phone: "", type: "", message: "" });
         setLoading(false);
       },
-      onError: () => {
-        toast.error("Une erreur est survenue lors de l'envoi.");
+      onError: (errors) => {
+        const mailError = errors && typeof errors.mail === "string" ? errors.mail : null;
+        toast.error(mailError || "Une erreur est survenue lors de l'envoi de votre message.");
         setLoading(false);
       },
       onFinish: () => setLoading(false),
@@ -53,48 +82,153 @@ export default function ContactSection() {
 
         <div className="grid lg:grid-cols-5 gap-12 lg:gap-16">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="lg:col-span-3">
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid sm:grid-cols-2 gap-5">
-                <div>
-                  <label className="font-tight text-xs tracking-technical uppercase text-muted-foreground mb-2 block">{t.contact.name}</label>
-                  <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t.contact.namePlaceholder} className="h-12 rounded-lg font-inter text-sm" />
-                </div>
-                <div>
-                  <label className="font-tight text-xs tracking-technical uppercase text-muted-foreground mb-2 block">{t.contact.email}</label>
-                  <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder={t.contact.emailPlaceholder} className="h-12 rounded-lg font-inter text-sm" />
-                </div>
-              </div>
+            <AnimatePresence mode="wait">
+              {submitted ? (
+                <motion.div
+                  key="success"
+                  initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.98 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="relative overflow-hidden rounded-2xl bg-card border border-accent/30 p-8 sm:p-10 shadow-xl"
+                >
+                  {/* Subtle decorative glow */}
+                  <div className="absolute -top-20 -right-20 w-56 h-56 bg-accent/15 rounded-full blur-3xl pointer-events-none" />
+                  <div className="absolute -bottom-20 -left-20 w-56 h-56 bg-secondary/15 rounded-full blur-3xl pointer-events-none" />
 
-              <div className="grid sm:grid-cols-2 gap-5">
-                <div>
-                  <label className="font-tight text-xs tracking-technical uppercase text-muted-foreground mb-2 block">{t.contact.phone}</label>
-                  <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder={t.contact.phonePlaceholder} className="h-12 rounded-lg font-inter text-sm" />
-                </div>
-                <div>
-                  <label className="font-tight text-xs tracking-technical uppercase text-muted-foreground mb-2 block">{t.contact.type}</label>
-                  <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
-                    <SelectTrigger className="h-12 rounded-lg font-inter text-sm">
-                      <SelectValue placeholder={t.contact.typePlaceholder} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {t.contact.types.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+                  <div className="relative z-10 space-y-6">
+                    <div className="flex items-start gap-4">
+                      <motion.div
+                        initial={{ scale: 0, rotate: -20 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ type: "spring", stiffness: 280, damping: 18, delay: 0.1 }}
+                        className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-500 shadow-md shadow-emerald-500/10 shrink-0"
+                      >
+                        <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                      </motion.div>
+                      <div>
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-tight font-600 tracking-technical uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 mb-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          {t.contact.successBadge || "Message envoyé"}
+                        </div>
+                        <h3 className="font-tight font-800 text-2xl sm:text-3xl text-foreground tracking-tight leading-tight">
+                          {t.contact.successTitle || "Demande transmise avec succès !"}
+                        </h3>
+                      </div>
+                    </div>
 
-              <div>
-                <label className="font-tight text-xs tracking-technical uppercase text-muted-foreground mb-2 block">{t.contact.message}</label>
-                <Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder={t.contact.messagePlaceholder} rows={5} className="rounded-lg font-inter text-sm resize-none" />
-              </div>
+                    <p className="font-inter text-muted-foreground text-sm sm:text-base leading-relaxed">
+                      {t.contact.successDesc || "Merci de nous avoir contactés. Votre message a bien été transmis à notre équipe logistique (contact@ezhl-logistics.com). Nous vous répondrons dans les plus brefs délais."}
+                    </p>
 
-              <Button type="submit" disabled={loading} className="bg-accent hover:bg-accent/90 text-accent-foreground font-tight text-sm tracking-technical uppercase rounded-lg px-8 h-12 min-w-[44px]">
-                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
-                {t.contact.send}
-              </Button>
-            </form>
+                    {submittedSummary && (
+                      <div className="rounded-xl bg-muted/40 border border-border p-5 space-y-3">
+                        <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                          <span className="font-tight text-xs tracking-technical uppercase text-muted-foreground font-600 flex items-center gap-1.5">
+                            <ShieldCheck className="w-4 h-4 text-accent" />
+                            {t.contact.sentSummary || "Récapitulatif de votre demande :"}
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-[11px] font-tight text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full font-500">
+                            Transmis à l'équipe
+                          </span>
+                        </div>
+
+                        <div className="grid sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+                          <div>
+                            <span className="text-muted-foreground block text-xs">{t.contact.name.replace('*', '').trim()} :</span>
+                            <span className="font-tight font-600 text-foreground">{submittedSummary.name}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground block text-xs">{t.contact.email.replace('*', '').trim()} :</span>
+                            <span className="font-tight font-600 text-foreground">{submittedSummary.email}</span>
+                          </div>
+                          {submittedSummary.typeLabel && (
+                            <div>
+                              <span className="text-muted-foreground block text-xs">{t.contact.type.replace('*', '').trim()} :</span>
+                              <span className="font-tight font-600 text-foreground">{submittedSummary.typeLabel}</span>
+                            </div>
+                          )}
+                          <div>
+                            <span className="text-muted-foreground block text-xs">{t.contact.sentToLabel || "Boîte de réception :"}</span>
+                            <span className="font-tight font-600 text-accent">contact@ezhl-logistics.com</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap items-center gap-3 pt-2">
+                      <Button
+                        type="button"
+                        onClick={() => setSubmitted(false)}
+                        className="bg-accent hover:bg-accent/90 text-accent-foreground font-tight text-xs sm:text-sm tracking-technical uppercase rounded-lg px-6 h-12 inline-flex items-center gap-2"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                        {t.contact.sendAnother || "Envoyer un autre message"}
+                      </Button>
+
+                      <a
+                        href="mailto:contact@ezhl-logistics.com"
+                        className="h-12 px-5 rounded-lg border border-border inline-flex items-center gap-2 text-xs sm:text-sm font-tight uppercase tracking-technical text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                      >
+                        <Mail className="w-4 h-4 text-accent" />
+                        contact@ezhl-logistics.com
+                      </a>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.form
+                  key="form"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  onSubmit={handleSubmit}
+                  className="space-y-5"
+                >
+                  <div className="grid sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="font-tight text-xs tracking-technical uppercase text-muted-foreground mb-2 block">{t.contact.name}</label>
+                      <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t.contact.namePlaceholder} className="h-12 rounded-lg font-inter text-sm" />
+                    </div>
+                    <div>
+                      <label className="font-tight text-xs tracking-technical uppercase text-muted-foreground mb-2 block">{t.contact.email}</label>
+                      <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder={t.contact.emailPlaceholder} className="h-12 rounded-lg font-inter text-sm" />
+                    </div>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="font-tight text-xs tracking-technical uppercase text-muted-foreground mb-2 block">{t.contact.phone}</label>
+                      <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder={t.contact.phonePlaceholder} className="h-12 rounded-lg font-inter text-sm" />
+                    </div>
+                    <div>
+                      <label className="font-tight text-xs tracking-technical uppercase text-muted-foreground mb-2 block">{t.contact.type}</label>
+                      <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
+                        <SelectTrigger className="h-12 rounded-lg font-inter text-sm">
+                          <SelectValue placeholder={t.contact.typePlaceholder} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {t.contact.types.map((type: { value: string; label: string }) => (
+                            <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="font-tight text-xs tracking-technical uppercase text-muted-foreground mb-2 block">{t.contact.message}</label>
+                    <Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder={t.contact.messagePlaceholder} rows={5} className="rounded-lg font-inter text-sm resize-none" />
+                  </div>
+
+                  <Button type="submit" disabled={loading} className="bg-accent hover:bg-accent/90 text-accent-foreground font-tight text-sm tracking-technical uppercase rounded-lg px-8 h-12 min-w-[44px]">
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+                    {t.contact.send}
+                  </Button>
+                </motion.form>
+              )}
+            </AnimatePresence>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.15 }} className="lg:col-span-2 space-y-8">

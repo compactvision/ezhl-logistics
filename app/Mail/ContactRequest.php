@@ -3,8 +3,8 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -14,12 +14,17 @@ class ContactRequest extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $data;
+    /**
+     * @var array<string, mixed>
+     */
+    public array $data;
 
     /**
      * Create a new message instance.
+     *
+     * @param array<string, mixed> $data
      */
-    public function __construct($data)
+    public function __construct(array $data)
     {
         $this->data = $data;
     }
@@ -29,8 +34,12 @@ class ContactRequest extends Mailable
      */
     public function envelope(): Envelope
     {
+        $senderName = (string) ($this->data['name'] ?? 'Client EZHL');
+        $senderEmail = (string) ($this->data['email'] ?? '');
+
         return new Envelope(
-            subject: 'Contact Request',
+            subject: 'Nouvelle demande de contact - ' . $senderName,
+            replyTo: !empty($senderEmail) ? [new Address($senderEmail, $senderName)] : [],
         );
     }
 

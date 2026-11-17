@@ -8,10 +8,12 @@ import GallerySection from "../components/GallerySection";
 import ContactSection from "../components/ContactSection";
 import Footer from "../components/Footer";
 import FloatingContact from "../components/FloatingContact";
+import { Toaster } from "sonner";
 
 export default function Home() {
   return (
     <div className="min-h-screen">
+      <Toaster position="top-right" richColors closeButton />
       <Navbar />
       <main>
         <HeroSection />

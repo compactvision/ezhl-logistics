@@ -111,8 +111,19 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
+        'address' => env('MAIL_FROM_ADDRESS', 'contact@ezhl-logistics.com'),
+        'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'EZHL Logistics')),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Contact Recipient Address
+    |--------------------------------------------------------------------------
+    |
+    | Destination mailbox for incoming website contact and quote requests.
+    |
+    */
+
+    'contact_recipient' => env('MAIL_CONTACT_ADDRESS', 'contact@ezhl-logistics.com'),
 
 ];
